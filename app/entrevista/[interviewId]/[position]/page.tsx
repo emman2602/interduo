@@ -1,19 +1,19 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { InterviewQuestionClient } from './InterviewQuestionClient'; // (Paso 2.C)
+import { InterviewQuestionClient } from './InterviewQuestionClient';
 
 type PageProps = {
-  params: {
+  params: Promise<{ // 👈 hazlo explícitamente una Promise
     interviewId: string;
     position: string;
-  }
+  }>
 };
 
-// Carga los datos de la pregunta actual
+// Función para cargar la pregunta actual
 async function loadQuestionData(interviewId: string, position: number) {
   const supabase = await createClient();
   
-  const { data:questionData, error } = await supabase
+  const { data: questionData, error } = await supabase
     .from('interview_questions')
     .select(`
       id,
@@ -28,10 +28,9 @@ async function loadQuestionData(interviewId: string, position: number) {
     .eq('position', position)
     .single();
 
-  // 2. SEGUNDA CONSULTA: Obtiene el total de preguntas
   const { count: totalQuestions, error: countError } = await supabase
     .from('interview_questions')
-    .select('*', { count: 'exact', head: true }) // 'head: true' no devuelve datos, solo el conteo
+    .select('*', { count: 'exact', head: true })
     .eq('interview_id', interviewId);
 
   if (error || countError || !questionData) {
@@ -45,34 +44,35 @@ async function loadQuestionData(interviewId: string, position: number) {
   return {
     interviewQuestionId: questionData.id,
     questionText: question?.question_text,
-    questionType: questionType,
-    totalQuestions: totalQuestions || 0, // Devuelve el conteo
+    questionType,
+    totalQuestions: totalQuestions || 0,
   };
 }
 
 export default async function InterviewPage({ params }: PageProps) {
-  const position = parseInt(params.position, 10);
-  
+  // ✅ Espera los params una sola vez
+  const { interviewId, position } = await params;
+  const positionNumber = parseInt(position, 10);
+
   const { 
     questionText, 
     questionType, 
     interviewQuestionId,
     totalQuestions 
-  } = await loadQuestionData(params.interviewId, position);
+  } = await loadQuestionData(interviewId, positionNumber);
 
   if (!questionText || !questionType) {
     redirect('/dashboard');
   }
 
-  // Pasa los datos al componente cliente
+  // ✅ Usa las variables ya resueltas (no vuelvas a usar params)
   return (
     <InterviewQuestionClient
       questionText={questionText}
       questionType={questionType}
       interviewQuestionId={interviewQuestionId}
-      // Pasa los params para la navegación (siguiente pregunta)
-      interviewId={params.interviewId}
-      currentPosition={position}
+      interviewId={interviewId}     // ← sin error
+      currentPosition={positionNumber}
       totalQuestions={totalQuestions}
     />
   );

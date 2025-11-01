@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
-import { createClient } from '@/lib/supabase/server';
 import "./globals.css";
-import { redirect } from "next/navigation";
+
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`

@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
+
 
 const NUMERO_DE_PREGUNTAS = 2; 
 

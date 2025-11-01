@@ -1,19 +1,19 @@
-import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
-import { evaluateEntireInterviewAction } from './actions'; // Importa la NUEVA acción (Paso 5)
+
+import { evaluateEntireInterviewAction } from './actions'; 
 import { Button } from '@/components/ui/button2';
-import { Home, UserCheck, Users } from 'lucide-react'; 
+
 import Link from 'next/link';
 
 
 type Props = {
-  params: { interviewId: string }
+  params: Promise<{ interviewId: string }>;
 };
 
 export default async function ResultsPage({ params }: Props) {
-  
+  //Esperar los parámetros antes de usarlos
+  const { interviewId } = await params;
   // 1. Llama a la acción que hace todo el trabajo pesado
-  const { averageScore, evaluations, error } = await evaluateEntireInterviewAction(params.interviewId);
+  const { averageScore, evaluations, error } = await evaluateEntireInterviewAction(interviewId);
 
   if (error) {
     return (
@@ -37,7 +37,10 @@ export default async function ResultsPage({ params }: Props) {
         {evaluations.map((evaluation, index) => (
           <div key={evaluation.answerId} className="p-6 bg-white shadow rounded-lg">
             <h3 className="text-xl font-semibold text-gray-800">Pregunta {index + 1}</h3>
-            <p className="text-gray-600 italic my-3">"{evaluation.questionText}"</p>
+            <p className="text-gray-600 italic my-3 before:content-['“'] after:content-['”']">
+              {evaluation.questionText}
+            </p>
+
             <div className="p-4 bg-gray-50 rounded-md my-4">
               <p className="text-sm font-semibold text-gray-600">Tu respuesta:</p>
               <p className="text-gray-800">{evaluation.answerText}</p>

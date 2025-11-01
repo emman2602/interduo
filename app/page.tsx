@@ -10,6 +10,15 @@ import { redirect } from "next/navigation";
 
 
 export default async function Home() {
+  const supabase = await createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Si el usuario existe (está logueado), redirige al dashboard
+  if (user) {
+    redirect('/dashboard');
+  }
+  // -
   
   return (
     <main className="min-h-screen flex flex-col items-center">

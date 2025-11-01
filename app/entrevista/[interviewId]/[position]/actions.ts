@@ -29,8 +29,18 @@ export async function saveAnswerAction(
     
     return { data: { success: true } };
 
-  } catch (error: any) {
-    console.error('Error guardando la respuesta:', error.message);
-    return { error: error.message };
+  } catch (error: unknown) { // 1. Cambia 'any' por 'unknown'
+    
+    // 2. Comprueba el tipo de error
+    if (error instanceof Error) {
+      console.error('Error guardando la respuesta:', error.message);
+      return { error: error.message };
+    }
+    
+    // 3. Maneja el caso de que no sea un objeto Error
+    const errorMessage = 'Un error desconocido ocurrió al guardar la respuesta.';
+    console.error(errorMessage, error);
+    return { error: errorMessage };
   }
+
 }

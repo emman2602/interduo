@@ -2,12 +2,12 @@
 // (Tu componente SideNav.tsx, que ahora es un Componente de Cliente)
 'use client'; 
 
-import Link from 'next/link';
+
 import NavLinks from './NavLinks'; // Tus enlaces estáticos (Inicio, Agenda, etc.)
 import Image from 'next/image';
-import { Book, GraduationCap } from 'lucide-react'; // Icono para el logo y subáreas
+
 import type { User } from '@supabase/supabase-js'; // Importa el tipo User
-import type { Subarea } from '@/app/dashboard/layout'; // Importa el tipo Subarea
+
 import Logo from './Logo';
 import { LogoutButton } from './logout-button';
 
