@@ -2,18 +2,39 @@
 
 import { createClient } from '@/lib/supabase/server';
 
+const NUMERO_DE_PREGUNTAS = 2;
 
-const NUMERO_DE_PREGUNTAS = 2; 
+// Tipos auxiliares
+type InterviewType = 'tecnica' | 'competencias';
 
-export async function createInterviewAction(subareaId: string, interviewType: 'tecnica' | 'competencias') {
+interface Question {
+  id: string;
+  text?: string;
+  type_id?: string;
+  difficulty?: number;
+  [key: string]: unknown; // por si la función RPC devuelve más columnas
+}
+
+interface CreateInterviewResult {
+  data?: string;
+  error?: string;
+}
+
+export async function createInterviewAction(
+  subareaId: string,
+  interviewType: InterviewType
+): Promise<CreateInterviewResult> {
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   if (!user) {
     return { error: 'No autenticado' };
   }
 
-  // 1. NUEVO: Obtener la experiencia del usuario de 'user_roles'
+  // 1. Obtener experiencia del usuario
   const { data: profile, error: profileError } = await supabase
     .from('user_roles')
     .select('selected_experience')
@@ -24,31 +45,28 @@ export async function createInterviewAction(subareaId: string, interviewType: 't
     return { error: 'No se pudo encontrar el perfil del usuario.' };
   }
 
-  // Mapear la experiencia a los niveles de dificultad
-  // (Esto conecta tu UI con tu base de datos)
   let difficultyLevels: number[];
   switch (profile.selected_experience) {
     case 'beginner':
-      difficultyLevels = [1]; // "beginner" solo obtiene preguntas de nivel 1
+      difficultyLevels = [1];
       break;
     case 'intermediate':
-      difficultyLevels = [2]; // "intermediate" solo obtiene nivel 2
+      difficultyLevels = [2];
       break;
     case 'advanced':
-      difficultyLevels = [3]; // "advanced" solo obtiene nivel 3
+      difficultyLevels = [3];
       break;
     default:
-      difficultyLevels = [1]; // Por si acaso, dar las más fáciles
+      difficultyLevels = [1];
   }
 
-  // 1. Mapea la elección del botón a los 'question_types' de tu DB
-  // (Según tu DB: 'hard_skill', 'soft_skill', 'coding_exercise')
-  const typesToFetch = interviewType === 'tecnica' 
-    ? ['hard_skill', 'coding_exercise'] 
-    : ['soft_skill'];
+  const typesToFetch =
+    interviewType === 'tecnica'
+      ? ['hard_skill', 'coding_exercise']
+      : ['soft_skill'];
 
   try {
-    // 2. CREAR LA ENTREVISTA PRINCIPAL
+    // 2. Crear la entrevista
     const { data: interview, error: interviewError } = await supabase
       .from('interviews')
       .insert({
@@ -56,59 +74,61 @@ export async function createInterviewAction(subareaId: string, interviewType: 't
         subarea_id: subareaId,
         status: 'in_progress',
       })
-      .select('id') // ¡Importante! Pide que te devuelva el ID
+      .select('id')
       .single();
 
     if (interviewError) throw interviewError;
     const newInterviewId = interview.id;
 
-
-    // 3. OBTENER LOS IDs DE LOS TIPOS DE PREGUNTA
+    // 3. Obtener IDs de tipos de pregunta
     const { data: questionTypes, error: typeError } = await supabase
       .from('question_types')
       .select('id')
-      .in('name', typesToFetch); // Busca los IDs para ['hard_skill', 'coding_exercise']
+      .in('name', typesToFetch);
 
     if (typeError) throw typeError;
-    const typeIds = questionTypes.map(qt => qt.id);
-    
+    const typeIds = (questionTypes ?? []).map((qt) => qt.id);
 
-    // 4. SELECCIONAR PREGUNTAS ALEATORIAS
+    // 4. Seleccionar preguntas aleatorias
     const { data: questions, error: questionError } = await supabase.rpc(
       'get_random_questions',
       {
         p_subarea_id: subareaId,
         p_type_ids: typeIds,
-        p_difficulty_levels: difficultyLevels, // NUEVO: Pasa el array de dificultad
-        p_limit: NUMERO_DE_PREGUNTAS
+        p_difficulty_levels: difficultyLevels,
+        p_limit: NUMERO_DE_PREGUNTAS,
       }
     );
 
     if (questionError) throw questionError;
-
     if (!questions || questions.length === 0) {
-      throw new Error('No se encontraron preguntas para esta selección (revisa tipo y dificultad).');
+      throw new Error(
+        'No se encontraron preguntas para esta selección (revisa tipo y dificultad).'
+      );
     }
 
-    
-    // 5. VINCULAR LAS PREGUNTAS A LA ENTREVISTA
-    const interviewQuestionsData = questions.map((q:any, index: number) => ({
-      interview_id: newInterviewId,
-      question_id: q.id,
-      position: index + 1,
-    }));
+    // 5. Vincular preguntas con la entrevista
+    const interviewQuestionsData = (questions as Question[]).map(
+      (q, index) => ({
+        interview_id: newInterviewId,
+        question_id: q.id,
+        position: index + 1,
+      })
+    );
 
     const { error: iqError } = await supabase
       .from('interview_questions')
       .insert(interviewQuestionsData);
 
     if (iqError) throw iqError;
-    
-    // 6. DEVOLVER EL ID DE LA ENTREVISTA
-    return { data: newInterviewId };
 
-  } catch (error: any) {
-    console.error('Error creando entrevista:', error.message);
-    return { error: error.message };
+    return { data: newInterviewId };
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Error desconocido al crear la entrevista.';
+    console.error('Error creando entrevista:', message);
+    return { error: message };
   }
 }

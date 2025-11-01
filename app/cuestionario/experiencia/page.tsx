@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import { saveUserExperience } from './actions';
 import { SelectionCard } from '@/components/ui/selection-card';
 import { Button } from '@/components/ui/button2';
-import Image from 'next/image';
+
 
 // datos de experiencia
 const experiences = [

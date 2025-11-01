@@ -3,16 +3,33 @@ import { redirect } from 'next/navigation';
 import { InterviewQuestionClient } from './InterviewQuestionClient';
 
 type PageProps = {
-  params: Promise<{ // 👈 hazlo explícitamente una Promise
+  params: Promise<{
     interviewId: string;
     position: string;
-  }>
+  }>;
 };
+
+// Definimos los tipos esperados desde Supabase
+interface QuestionType {
+  name: string;
+}
+
+interface Question {
+  id: string;
+  question_text: string;
+  question_types: QuestionType | null;
+}
+
+interface InterviewQuestionRow {
+  id: string;
+  position: number;
+  questions: Question | null;
+}
 
 // Función para cargar la pregunta actual
 async function loadQuestionData(interviewId: string, position: number) {
   const supabase = await createClient();
-  
+
   const { data: questionData, error } = await supabase
     .from('interview_questions')
     .select(`
@@ -21,12 +38,12 @@ async function loadQuestionData(interviewId: string, position: number) {
       questions (
         id,
         question_text,
-        question_types ( name ) 
+        question_types ( name )
       )
     `)
     .eq('interview_id', interviewId)
     .eq('position', position)
-    .single();
+    .single<InterviewQuestionRow>(); // 👈 tipa el resultado directamente
 
   const { count: totalQuestions, error: countError } = await supabase
     .from('interview_questions')
@@ -37,41 +54,39 @@ async function loadQuestionData(interviewId: string, position: number) {
     console.error('Error cargando la pregunta o el conteo:', error?.message);
     redirect('/dashboard');
   }
-  
-  const question = questionData.questions as any;
-  const questionType = question?.question_types?.name;
+
+  const question = questionData.questions;
+  const questionType = question?.question_types?.name ?? null;
 
   return {
     interviewQuestionId: questionData.id,
-    questionText: question?.question_text,
+    questionText: question?.question_text ?? '',
     questionType,
-    totalQuestions: totalQuestions || 0,
+    totalQuestions: totalQuestions ?? 0,
   };
 }
 
 export default async function InterviewPage({ params }: PageProps) {
-  // ✅ Espera los params una sola vez
   const { interviewId, position } = await params;
   const positionNumber = parseInt(position, 10);
 
-  const { 
-    questionText, 
-    questionType, 
+  const {
+    questionText,
+    questionType,
     interviewQuestionId,
-    totalQuestions 
+    totalQuestions,
   } = await loadQuestionData(interviewId, positionNumber);
 
   if (!questionText || !questionType) {
     redirect('/dashboard');
   }
 
-  // ✅ Usa las variables ya resueltas (no vuelvas a usar params)
   return (
     <InterviewQuestionClient
       questionText={questionText}
       questionType={questionType}
       interviewQuestionId={interviewQuestionId}
-      interviewId={interviewId}     // ← sin error
+      interviewId={interviewId}
       currentPosition={positionNumber}
       totalQuestions={totalQuestions}
     />
