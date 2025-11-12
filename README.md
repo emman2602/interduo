@@ -11,7 +11,7 @@ Este proyecto está construido con el **T-3 Stack** (Next.js, Tailwind CSS, Type
 
 ---
 
-## ✨ Características Principales
+## Características Principales
 
 * **Flujo de Onboarding:** Cuestionario de bienvenida para personalizar la experiencia del usuario (selección de área y nivel de experiencia).
 * **Generación de Entrevistas Dinámicas:** Elige entre entrevistas "Técnicas" (hard skills, coding) o "Competencias" (soft skills). Las preguntas se seleccionan aleatoriamente de la base de datos basándose en el área y nivel de dificultad del usuario.
@@ -25,7 +25,7 @@ Este proyecto está construido con el **T-3 Stack** (Next.js, Tailwind CSS, Type
 
 ---
 
-## 🛠️ Stack Tecnológico
+## Stack Tecnológico
 
 * **Framework:** Next.js 14+ (App Router)
 * **Base de Datos:** Supabase (PostgreSQL)
@@ -38,7 +38,7 @@ Este proyecto está construido con el **T-3 Stack** (Next.js, Tailwind CSS, Type
 
 ---
 
-## 🚀 Empezando (Configuración Local)
+## Empezando (Configuración Local)
 
 Sigue estos pasos para levantar el proyecto en tu máquina local.
 
@@ -55,3 +55,11 @@ Sigue estos pasos para levantar el proyecto en tu máquina local.
 ```bash
 git clone [https://github.com/tu-usuario/interduo.git](https://github.com/tu-usuario/interduo.git)
 cd interduo
+
+
+🤝 Autores
+Emmanuel Alejandro
+
+Dulce María
+
+¡Hecho con <3!
