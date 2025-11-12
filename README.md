@@ -56,8 +56,10 @@ Sigue estos pasos para levantar el proyecto en tu máquina local.
 git clone [https://github.com/tu-usuario/interduo.git](https://github.com/tu-usuario/interduo.git)
 cd interduo
 
+```
 
-🤝 Autores
+### 🤝 Autores
+
 Emmanuel Alejandro
 
 Dulce María
