@@ -7,7 +7,7 @@ InterDuo es un simulador de entrevistas laborales diseñado para ayudar a los de
 
 Este proyecto está construido con el **T-3 Stack** (Next.js, Tailwind CSS, TypeScript) y utiliza **Supabase** como backend.
 
-[Link al Deploy en Vercel]([https://tu-proyecto.vercel.app](https://interduo-aledul.vercel.app/))
+[Link al Deploy en Vercel](https://interduo-aledul.vercel.app/)
 
 ---
 
