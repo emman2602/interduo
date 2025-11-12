@@ -6,9 +6,7 @@ import Editor from '@monaco-editor/react'; // 1. Importa el editor
 import { Button } from '@/components/ui/button2';
 import { saveAnswerAction } from './actions';
 
-
-// (Importa tu Server Action para 'guardar y evaluar')
-// import { saveAndEvaluateAction } from './actions'; 
+ 
 
 type Props = {
   questionText: string;

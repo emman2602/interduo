@@ -5,11 +5,9 @@ import SubareaGrid from './SubareaGrid'; // Importa el componente cliente
 import Image from 'next/image';
 import { Button } from '@/components/ui/button2';
 import Link from 'next/link';
-// (Importa tu mascota si la tienes)
-// import { Mascota } from '@/components/Mascota';
+
 
 // 1. Define el tipo de dato que esperamos
-// (Lo exportamos para que SubareaGrid.tsx lo pueda usar)
 export type Subarea = {
   id: string;
   name: string;
@@ -38,7 +36,7 @@ async function loadDashboardData() {
   }
 
   // 4. Carga las subáreas que coinciden con el área del usuario
-  // ¡Asegúrate de pedir 'icon_name'!
+
   const { data: subareas, error } = await supabase
     .from('subareas')
     .select('id, name, image_url')
@@ -53,7 +51,7 @@ async function loadDashboardData() {
 }
 
 
-// 5. La Página (Server Component)
+
 export default async function DashboardPage() {
   // 6. Llama a la función de carga de datos
   const subareas = await loadDashboardData();

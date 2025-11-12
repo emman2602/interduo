@@ -3,9 +3,9 @@ import React from 'react';
 import { createClient } from '@/lib/supabase/server'; // 1. Importa el cliente de SERVIDOR
 import { redirect } from 'next/navigation'; // 2. Importa redirect
 import { BackButton } from '@/components/ui/back-button';
- // 3. Importa tu botón
 
-export default async function CuestionarioLayout({ // 4. Conviértelo en 'async'
+
+export default async function CuestionarioLayout({ 
   children,
 }: {
   children: React.ReactNode;
@@ -28,8 +28,6 @@ export default async function CuestionarioLayout({ // 4. Conviértelo en 'async'
       */}
       <BackButton/>
 
-      {/* Tu mascota (si la quieres) */}
-      {/* <MascotaAzul className="absolute bottom-0 left-0" /> */}
       
       <main className="w-full max-w-5xl">
         {children}

@@ -12,14 +12,14 @@ export default async function InterviewLayout({
 }) {
   const supabase = await createClient();
 
-  // 1. EL GUARDIA DE SEGURIDAD
+  // 1. verifica si esta loggeado si no, lo saca
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    redirect('/login'); // Si no hay usuario, ¡fuera!
+    redirect('/login'); // Si no hay usuario lo redirige a login
   }
 
-  // 2. EL CONTENEDOR DE "MODO ENFOQUE"
-  // Es un layout simple, sin sidebar, solo un fondo
+  
+
   return (
     <div className="min-h-screen bg-gray-50">
       {children}

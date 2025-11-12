@@ -11,7 +11,7 @@ export type Subarea = {
 };
 
 
-// Esta función AHORA ES MÁS SIMPLE
+
 async function getUserData() {
   const supabase = await createClient();
 
@@ -27,7 +27,7 @@ async function getUserData() {
     .eq('user_id', user.id)
     .single();
 
-  // 2. ...para poder redirigir si no ha completado el cuestionario
+  // 2. redirigir si no ha completado el cuestionario
   if (!profile?.selected_area_id || !profile?.selected_experience) {
     redirect('/cuestionario/areas');
   }
@@ -43,7 +43,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // 5. Llama a la función (ahora solo devuelve 'user')
+  // 5. Llama a la función ( devuelve 'user')
   const { user } = await getUserData();
 
   return (
@@ -52,10 +52,10 @@ export default async function DashboardLayout({
       <SideNav user={user} />
       <TopNav user={user} />
 
-      {/* 3. Contenido principal (sigue igual) */}
+      {/* 3. Contenido principal */}
       <main className="py-10 mt-16 md:mt-0 md:pl-64">
         <div className="px-4 sm:px-6 lg:px-8">
-          {children} {/* Aquí se renderiza tu app/dashboard/page.tsx */}
+          {children} {/* Aquí se renderiza app/dashboard/page.tsx */}
         </div>
       </main>
     </div>

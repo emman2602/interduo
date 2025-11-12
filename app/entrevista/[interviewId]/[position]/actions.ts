@@ -29,7 +29,7 @@ export async function saveAnswerAction(
     
     return { data: { success: true } };
 
-  } catch (error: unknown) { // 1. Cambia 'any' por 'unknown'
+  } catch (error: unknown) { 
     
     // 2. Comprueba el tipo de error
     if (error instanceof Error) {

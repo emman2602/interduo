@@ -9,7 +9,7 @@ type PageProps = {
   }>;
 };
 
-// Definimos los tipos esperados desde Supabase
+// Definimos los tipos esperados desde Supabase usando interfaces
 interface QuestionType {
   name: string;
 }
@@ -43,7 +43,7 @@ async function loadQuestionData(interviewId: string, position: number) {
     `)
     .eq('interview_id', interviewId)
     .eq('position', position)
-    .single<InterviewQuestionRow>(); // 👈 tipa el resultado directamente
+    .single<InterviewQuestionRow>(); 
 
   const { count: totalQuestions, error: countError } = await supabase
     .from('interview_questions')

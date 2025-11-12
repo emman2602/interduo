@@ -14,7 +14,7 @@ export default function Page() {
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">
-                ¡Gracias pore registrarte!
+                ¡Gracias por registrarte!
               </CardTitle>
               <CardDescription>Checa tu email para confirmar</CardDescription>
             </CardHeader>

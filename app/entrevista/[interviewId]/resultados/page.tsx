@@ -12,7 +12,7 @@ type Props = {
 export default async function ResultsPage({ params }: Props) {
   //Esperar los parámetros antes de usarlos
   const { interviewId } = await params;
-  // 1. Llama a la acción que hace todo el trabajo pesado
+  // 1. Llama a la acción que hace la evaluacion de entrevista
   const { averageScore, evaluations, error } = await evaluateEntireInterviewAction(interviewId);
 
   if (error) {
@@ -57,7 +57,7 @@ export default async function ResultsPage({ params }: Props) {
           
           {/* Botón 2: Evaluar por experto (Deshabilitado) */}
           <Button
-            className="flex-1" // flex-1 para que compartan espacio
+            className="flex-1" 
             disabled
             title="Próximamente"
           >
@@ -67,7 +67,7 @@ export default async function ResultsPage({ params }: Props) {
           
           {/* Botón 3: Evaluar por comunidad (Deshabilitado) */}
           <Button
-            className="flex-1" // flex-1 para que compartan espacio
+            className="flex-1" 
             disabled
             title="Próximamente"
           >

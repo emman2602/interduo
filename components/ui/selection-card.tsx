@@ -1,12 +1,12 @@
-// components/ui/SelectionCard.tsx
+
 import Image from 'next/image';
 import React from 'react';
 
 type SelectionCardProps = {
   title: string;
   description?: string;
-  imageSrc?: string; // Para la pantalla 1
-  icon?: React.ReactNode; // Para la pantalla 2
+  imageSrc?: string; 
+  icon?: React.ReactNode; 
   isSelected?: boolean;
   onClick: () => void;
 };

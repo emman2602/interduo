@@ -2,7 +2,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-// Importa tu cliente de Supabase
+// Importa el cliente de Supabase
 import { createClient } from '@/lib/supabase/client';
 import { SelectionCard } from '@/components/ui/selection-card';
 import { saveUserArea } from './actions'
@@ -29,7 +29,7 @@ export default function SelectAreaPage() {
     const getAreas = async () => {
       setLoading(true);
       const { data, error } = await supabase
-        .from('areas') // El nombre de tu tabla
+        .from('areas') 
         .select('*'); // Pide todas las columnas
 
       if (error) {
@@ -41,7 +41,7 @@ export default function SelectAreaPage() {
     };
 
     getAreas();
-  }, [supabase]); // Depende de 'supabase'
+  }, [supabase]); 
 
   const handleSelectArea = async(areaId: string) => {
     

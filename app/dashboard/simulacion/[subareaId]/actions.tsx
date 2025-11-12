@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 
 const NUMERO_DE_PREGUNTAS = 2;
 
-// Tipos auxiliares
+// Tipos auxiliares para determinar el tipo de entrevista
 type InterviewType = 'tecnica' | 'competencias';
 
 interface Question {

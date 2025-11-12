@@ -87,7 +87,7 @@ export async function evaluateEntireInterviewAction(
     };
 
     // =======================================================
-    // 2. Si ya está completada → leer resultados
+    // 2. Si ya está completada solo se leen los resultados
     // =======================================================
     if (interview.status === 'completed') {
       const { data: existingData, error: fetchError } = await supabase
@@ -115,7 +115,7 @@ export async function evaluateEntireInterviewAction(
     }
 
     // =======================================================
-    // 3. Si está "in_progress" → ejecutar evaluación IA
+    // 3. Si está "in_progress" ejecutar evaluación IA 
     // =======================================================
     const { data: interviewData, error: fetchError } = await supabase
       .from('interview_questions')
@@ -148,7 +148,7 @@ export async function evaluateEntireInterviewAction(
       }
 
       const systemPrompt = `
-        Eres un evaluador experto en entrevistas laborales.
+        Eres un evaluador experto en entrevistas laborales que se caracteriza por ser muy amable y motivador.
         La pregunta fue: "${question.question_text}"
         La respuesta fue: "${answer.answer_text}"
         Devuelve un objeto JSON con "score" (0-100) y "feedback" (máx. 50 palabras).
@@ -176,7 +176,7 @@ export async function evaluateEntireInterviewAction(
     const evaluations = await Promise.all(evaluationPromises);
 
     // =======================================================
-    // Guardar en la DB
+    // Guardar en la DB de supabase
     // =======================================================
     const aiEvalsToInsert = evaluations
       .filter((e) => e.answerId !== null)

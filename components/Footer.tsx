@@ -1,5 +1,5 @@
 import { Github, Linkedin, Twitter } from 'lucide-react';
-// ¡Ya no necesitas 'next/link' aquí!
+
 
 export default function Footer() {
   return (
