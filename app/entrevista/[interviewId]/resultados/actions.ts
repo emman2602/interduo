@@ -44,6 +44,14 @@ interface EvaluationSummary {
   error?: string | null;
 }
 
+type AnswerRaw = {
+  id?: string;
+  answer_text?: string;
+  ai_evaluations?: unknown;
+  community_comments?: unknown;
+};
+
+
 // --- HELPER MÁGICO: Normaliza datos de Supabase ---
 // Detecta si Supabase envió un Objeto o un Array y devuelve siempre el objeto o null
 function normalizeOne<T>(data: unknown): T | null {
@@ -58,12 +66,12 @@ function normalizeOne<T>(data: unknown): T | null {
 export async function shareInterviewAction(interviewId: string) {
   const supabase = await createClient();
   try {
-    const { error } = await supabase
+    const { error: updateShareError } = await supabase
       .from('interviews')
       .update({ is_shared: true })
       .eq('id', interviewId);
 
-    if (error) throw error;
+    if (updateShareError) throw updateShareError;
     return { success: true };
   } catch (error: unknown) {
     return { error: 'Error al compartir' };
@@ -90,19 +98,16 @@ export async function evaluateEntireInterviewAction(
     // Se usa tanto para leer resultados existentes como para preparar la IA
     const processData = (rows: unknown[]): EvaluationResult[] => {
       return rows.map((row) => {
-        const item = row as InterviewQuestionRaw;
-        
-        // CORRECCIÓN PRINCIPAL: Usamos normalizeOne
-        const question = normalizeOne<Question>(item.questions);
-        const answer = normalizeOne<Answer>(item.answers);
-        
-        // Normalizar evaluaciones
-        const evalData = answer ? (answer as any).ai_evaluations : null;
-        const evaluation = normalizeOne<AIEvaluation>(evalData);
+      const item = row as InterviewQuestionRaw;
 
-        // Normalizar comentarios
-        const commentsRaw = answer ? (answer as any).community_comments : [];
-        const comments = Array.isArray(commentsRaw) ? commentsRaw : [];
+        const question = normalizeOne<Question>(item.questions);
+        const answer = normalizeOne<AnswerRaw>(item.answers);
+
+        const evaluation = normalizeOne<AIEvaluation>(answer?.ai_evaluations);
+
+        const comments = Array.isArray(answer?.community_comments)
+          ? (answer?.community_comments as { comment_text: string }[])
+          : [];
 
         return {
           answerId: answer?.id ?? null,

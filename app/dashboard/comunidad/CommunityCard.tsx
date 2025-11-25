@@ -76,7 +76,7 @@ export default function CommunityCard({ data, isMyInterview = false }: Props) {
                 P{idx + 1}: {qa.question}
               </h4>
               <div className="bg-gray-50 p-3 rounded-lg text-gray-700 text-sm border-l-4 border-indigo-300 italic">
-                "{qa.answer}"
+                &quot;{qa.answer}&quot;
               </div>
             </div>
           ))}
