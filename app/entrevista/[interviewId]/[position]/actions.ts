@@ -19,11 +19,14 @@ export async function saveAnswerAction(
     // 1. Guardar la respuesta del usuario en la tabla 'answers'
     const { error } = await supabase
       .from('answers')
-      .insert({
+      .upsert({
         interview_question_id: interviewQuestionId,
         user_id: user.id,
         answer_text: answerText
-      });
+      },{
+        onConflict: 'interview_question_id'
+      }
+    );
 
     if (error) throw error;
     

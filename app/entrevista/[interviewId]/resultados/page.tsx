@@ -1,8 +1,10 @@
 
 import { evaluateEntireInterviewAction } from './actions'; 
 import { Button } from '@/components/ui/button2';
+import { Users } from 'lucide-react';
 
 import Link from 'next/link';
+import ShareButton from './ShareButton';
 
 
 type Props = {
@@ -35,7 +37,7 @@ export default async function ResultsPage({ params }: Props) {
       <h2 className="text-4xl font-bold mt-6 mb-6">Retroalimentación Detallada</h2>
       <div className="space-y-6">
         {evaluations.map((evaluation, index) => (
-          <div key={evaluation.answerId} className="p-6 bg-white shadow rounded-lg">
+          <div key={index} className="p-6 bg-white shadow rounded-lg">
             <h3 className="text-xl font-semibold text-gray-800">Pregunta {index + 1}</h3>
             <p className="text-gray-600 italic my-3 before:content-['“'] after:content-['”']">
               {evaluation.questionText}
@@ -65,15 +67,10 @@ export default async function ResultsPage({ params }: Props) {
             Evaluar por experto
           </Button>
           
-          {/* Botón 3: Evaluar por comunidad (Deshabilitado) */}
-          <Button
-            className="flex-1" 
-            disabled
-            title="Próximamente"
-          >
-            
-            Evaluar por comunidad
-          </Button>
+          {/* Botón 3: Comunidad */}
+        <Link href="/dashboard/comunidad" className="flex-1">
+           <ShareButton interviewId={(await params).interviewId}/>
+        </Link>
         </div>
 
         {/* Fila 2: Botón de Volver al inicio */}

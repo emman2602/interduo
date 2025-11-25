@@ -10,6 +10,7 @@ import {
   IoCalendarOutline,
   IoHomeOutline,
   IoSettingsOutline,
+  IoPeopleOutline
 } from 'react-icons/io5';
 
 import clsx from 'clsx';
@@ -34,6 +35,11 @@ const links = [
     name: 'Notificaciones',
     href: '/dashboard/notificaciones',
     icon: GoBell,
+  },
+  {
+    name: 'Comunidad',
+    href: '/dashboard/comunidad',
+    icon: IoPeopleOutline,
   },
   {
     name: 'Ajustes',

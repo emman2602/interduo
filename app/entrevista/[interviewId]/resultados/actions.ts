@@ -5,7 +5,8 @@ import OpenAI from 'openai';
 
 const openai = new OpenAI();
 
-// Tipos auxiliares
+// --- DEFINICIÓN DE TIPOS ---
+
 interface AIEvaluation {
   score: number;
   feedback: string;
@@ -14,16 +15,18 @@ interface AIEvaluation {
 interface Answer {
   id: string;
   answer_text: string;
-  ai_evaluations?: AIEvaluation[];
+  ai_evaluations?: AIEvaluation | AIEvaluation[];
+  community_comments?: { comment_text: string }[];
 }
 
 interface Question {
   question_text: string;
 }
 
-interface InterviewQuestionRow {
-  questions: Question;
-  answers: Answer[];
+// Usamos 'unknown' para procesar relaciones de forma segura
+interface InterviewQuestionRaw {
+  questions: unknown;
+  answers: unknown;
 }
 
 interface EvaluationResult {
@@ -32,6 +35,7 @@ interface EvaluationResult {
   feedback: string;
   questionText: string;
   answerText: string;
+  communityComments: { comment_text: string }[];
 }
 
 interface EvaluationSummary {
@@ -40,82 +44,111 @@ interface EvaluationSummary {
   error?: string | null;
 }
 
+// --- HELPER MÁGICO: Normaliza datos de Supabase ---
+// Detecta si Supabase envió un Objeto o un Array y devuelve siempre el objeto o null
+function normalizeOne<T>(data: unknown): T | null {
+  if (!data) return null;
+  if (Array.isArray(data)) {
+    return data.length > 0 ? (data[0] as T) : null;
+  }
+  return data as T;
+}
+
+// --- ACCIÓN DE COMPARTIR ---
+export async function shareInterviewAction(interviewId: string) {
+  const supabase = await createClient();
+  try {
+    const { error } = await supabase
+      .from('interviews')
+      .update({ is_shared: true })
+      .eq('id', interviewId);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error: unknown) {
+    return { error: 'Error al compartir' };
+  }
+}
+
+// --- ACCIÓN DE EVALUAR ---
 export async function evaluateEntireInterviewAction(
   interviewId: string
 ): Promise<EvaluationSummary> {
   const supabase = await createClient();
 
   try {
-    // =======================================================
     // 1. Revisa el estado de la entrevista
-    // =======================================================
     const { data: interview, error: fetchInterviewError } = await supabase
       .from('interviews')
       .select('status')
       .eq('id', interviewId)
-      .single<{ status: string }>();
+      .single();
 
-    if (fetchInterviewError) throw fetchInterviewError;
-    if (!interview) throw new Error('Entrevista no encontrada');
+    if (fetchInterviewError || !interview) throw new Error('Entrevista no encontrada');
 
-    // =======================================================
-    // Helper: Calcula promedio
-    // =======================================================
-    const calculateResults = (
-      data: InterviewQuestionRow[]
-    ): { averageScore: number; evaluations: EvaluationResult[] } => {
-      let totalScore = 0;
+    // --- HELPER: Procesa los datos crudos usando normalizeOne ---
+    // Se usa tanto para leer resultados existentes como para preparar la IA
+    const processData = (rows: unknown[]): EvaluationResult[] => {
+      return rows.map((row) => {
+        const item = row as InterviewQuestionRaw;
+        
+        // CORRECCIÓN PRINCIPAL: Usamos normalizeOne
+        const question = normalizeOne<Question>(item.questions);
+        const answer = normalizeOne<Answer>(item.answers);
+        
+        // Normalizar evaluaciones
+        const evalData = answer ? (answer as any).ai_evaluations : null;
+        const evaluation = normalizeOne<AIEvaluation>(evalData);
 
-      const evaluations = data.map((item) => {
-        const question = item.questions;
-        const answer = item.answers?.[0];
-        const evaluation = answer?.ai_evaluations?.[0];
-
-        totalScore += evaluation?.score || 0;
+        // Normalizar comentarios
+        const commentsRaw = answer ? (answer as any).community_comments : [];
+        const comments = Array.isArray(commentsRaw) ? commentsRaw : [];
 
         return {
           answerId: answer?.id ?? null,
           score: evaluation?.score ?? 0,
           feedback: evaluation?.feedback ?? 'No se encontró evaluación.',
           questionText: question?.question_text ?? 'Pregunta no encontrada.',
-          answerText: answer?.answer_text ?? '',
+          answerText: answer?.answer_text ?? 'No se proporcionó respuesta.',
+          communityComments: comments
         };
       });
-
-      const averageScore = Math.round(totalScore / (evaluations.length || 1));
-      return { averageScore, evaluations };
     };
 
     // =======================================================
-    // 2. Si ya está completada solo se leen los resultados
+    // 2. SI YA ESTÁ COMPLETADA (Intentar leer)
     // =======================================================
     if (interview.status === 'completed') {
-      const { data: existingData, error: fetchError } = await supabase
+      const { data: existingData } = await supabase
         .from('interview_questions')
-        .select(
-          `
+        .select(`
           questions ( question_text ),
           answers (
             id,
             answer_text,
-            ai_evaluations ( score, feedback )
+            ai_evaluations ( score, feedback ),
+            community_comments ( comment_text )
           )
-        `
-        )
+        `)
         .eq('interview_id', interviewId)
         .order('position', { ascending: true });
 
-      if (fetchError) throw fetchError;
-
-      const { averageScore, evaluations } = calculateResults(
-        (existingData ?? []) as unknown as InterviewQuestionRow[]
-      );
-
-      return { averageScore, evaluations, error: null };
+      const evaluations = processData(existingData || []);
+      
+      // AUTO-CORRECCIÓN: Si vemos que está "completed" pero no tiene evaluaciones (score 0),
+      // significa que falló antes. Forzamos que continúe a la sección de IA.
+      const hasEvaluations = evaluations.some(e => e.score > 0);
+      
+      if (hasEvaluations) {
+        const totalScore = evaluations.reduce((acc, e) => acc + e.score, 0);
+        const avg = Math.round(totalScore / (evaluations.length || 1));
+        return { averageScore: avg, evaluations, error: null };
+      }
+      // Si no tiene evaluaciones, ignoramos el estado 'completed' y dejamos que corra la IA abajo...
     }
 
     // =======================================================
-    // 3. Si está "in_progress" ejecutar evaluación IA 
+    // 3. EJECUTAR IA (Si está in_progress o estaba rota)
     // =======================================================
     const { data: interviewData, error: fetchError } = await supabase
       .from('interview_questions')
@@ -127,31 +160,33 @@ export async function evaluateEntireInterviewAction(
       .order('position', { ascending: true });
 
     if (fetchError) throw fetchError;
-    if (!interviewData || interviewData.length === 0)
-      throw new Error('No se encontraron preguntas.');
+    if (!interviewData || interviewData.length === 0) throw new Error('Sin preguntas.');
 
-    const interviewRows = (interviewData ?? []) as unknown as InterviewQuestionRow[];
+    const interviewRows = interviewData as unknown[];
 
-
-    const evaluationPromises = interviewRows.map(async (item): Promise<EvaluationResult> => {
-      const question = item.questions;
-      const answer = item.answers?.[0];
+    const evaluationPromises = interviewRows.map(async (row): Promise<EvaluationResult> => {
+      const item = row as InterviewQuestionRaw;
+      
+      // USAMOS normalizeOne
+      const question = normalizeOne<Question>(item.questions);
+      const answer = normalizeOne<Answer>(item.answers);
 
       if (!answer) {
         return {
           answerId: null,
           score: 0,
           feedback: 'No se proporcionó respuesta.',
-          questionText: question.question_text,
+          questionText: question?.question_text || '',
           answerText: 'No se proporcionó respuesta.',
+          communityComments: []
         };
       }
 
+      // Llamada a OpenAI
       const systemPrompt = `
-        Eres un evaluador experto en entrevistas laborales que se caracteriza por ser muy amable y motivador.
-        La pregunta fue: "${question.question_text}"
-        La respuesta fue: "${answer.answer_text}"
-        Devuelve un objeto JSON con "score" (0-100) y "feedback" (máx. 50 palabras).
+        Eres un evaluador de entrevistas laborales demasiado amable, motivador y comprensivo. Pregunta: "${question?.question_text}".
+        Respuesta: "${answer.answer_text}".
+        Devuelve JSON: { "score": number (0-100), "feedback": string (max 50 words) }
       `;
 
       const completion = await openai.chat.completions.create({
@@ -159,55 +194,54 @@ export async function evaluateEntireInterviewAction(
         messages: [{ role: 'system', content: systemPrompt }],
         response_format: { type: 'json_object' },
       });
-
-      const aiResponse = JSON.parse(
-        completion.choices[0].message.content || '{}'
-      ) as Partial<AIEvaluation>;
+      
+      const content = completion.choices[0].message.content || '{}';
+      const aiRes = JSON.parse(content);
 
       return {
         answerId: answer.id,
-        score: aiResponse.score ?? 0,
-        feedback: aiResponse.feedback ?? 'No se pudo generar feedback.',
-        questionText: question.question_text,
+        score: aiRes.score || 0,
+        feedback: aiRes.feedback || 'Sin feedback.',
+        questionText: question?.question_text || '',
         answerText: answer.answer_text,
+        communityComments: []
       };
     });
 
     const evaluations = await Promise.all(evaluationPromises);
 
-    // =======================================================
-    // Guardar en la DB de supabase
-    // =======================================================
-    const aiEvalsToInsert = evaluations
-      .filter((e) => e.answerId !== null)
-      .map((e) => ({
+    // Guardar en DB con UPSERT para evitar duplicados
+    const evalsToSave = evaluations
+      .filter(e => e.answerId)
+      .map(e => ({
         answer_id: e.answerId!,
         score: e.score,
-        feedback: e.feedback,
+        feedback: e.feedback
       }));
 
-    if (aiEvalsToInsert.length > 0) {
-      await supabase.from('ai_evaluations').insert(aiEvalsToInsert);
+    if (evalsToSave.length > 0) {
+      await supabase.from('ai_evaluations').upsert(
+        evalsToSave, 
+        { onConflict: 'answer_id' }
+      );
     }
 
-    await supabase
-      .from('interviews')
-      .update({
-        status: 'completed',
-        completed_at: new Date().toISOString(),
+    // Asegurar estado 'completed'
+    await supabase.from('interviews')
+      .update({ 
+        status: 'completed', 
+        completed_at: new Date().toISOString() 
       })
       .eq('id', interviewId);
 
     const totalScore = evaluations.reduce((acc, e) => acc + e.score, 0);
-    const averageScore = Math.round(totalScore / (evaluations.length || 1));
+    const avg = Math.round(totalScore / (evaluations.length || 1));
 
-    return { averageScore, evaluations, error: null };
-  } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Error desconocido en la evaluación.';
-    console.error('Error en la evaluación final:', message);
-    return { averageScore: 0, evaluations: [], error: message };
+    return { averageScore: avg, evaluations, error: null };
+
+  } catch (error: unknown) {
+    let msg = 'Error desconocido';
+    if (error instanceof Error) msg = error.message;
+    return { averageScore: 0, evaluations: [], error: msg };
   }
 }
