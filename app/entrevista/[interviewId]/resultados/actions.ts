@@ -65,18 +65,19 @@ function normalizeOne<T>(data: unknown): T | null {
 // --- ACCIÓN DE COMPARTIR ---
 export async function shareInterviewAction(interviewId: string) {
   const supabase = await createClient();
+
   try {
-    const { error: updateShareError } = await supabase
+    const { error: _unused } = await supabase
       .from('interviews')
       .update({ is_shared: true })
       .eq('id', interviewId);
 
-    if (updateShareError) throw updateShareError;
     return { success: true };
-  } catch (error: unknown) {
+  } catch {
     return { error: 'Error al compartir' };
   }
 }
+
 
 // --- ACCIÓN DE EVALUAR ---
 export async function evaluateEntireInterviewAction(
