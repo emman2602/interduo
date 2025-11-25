@@ -67,16 +67,21 @@ export async function shareInterviewAction(interviewId: string) {
   const supabase = await createClient();
 
   try {
-    const { error: _unused } = await supabase
+    const result = await supabase
       .from('interviews')
       .update({ is_shared: true })
       .eq('id', interviewId);
+
+    if (result.error) {
+      return { error: 'Error al compartir' };
+    }
 
     return { success: true };
   } catch {
     return { error: 'Error al compartir' };
   }
 }
+
 
 
 // --- ACCIÓN DE EVALUAR ---
