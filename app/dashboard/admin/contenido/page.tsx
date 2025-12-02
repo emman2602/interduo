@@ -22,7 +22,7 @@ export default async function ContentPage() {
       <div>
         <h3 className="text-lg font-bold text-gray-800 mb-4">Áreas Activas ({areas?.length || 0})</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {(areas || []).map((area: any) => (
+          {(areas || []).map((area) => (
             <div key={area.id} className="p-4 bg-white rounded-lg border border-gray-200 flex justify-between items-center shadow-sm">
               <span className="font-medium text-gray-700">{area.name}</span>
               <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">Activa</span>
