@@ -3,7 +3,7 @@
 'use client'; 
 
 
-import NavLinks from './NavLinks'; 
+import NavLinks from './AdminLinks'; 
 import Image from 'next/image';
 
 import type { User } from '@supabase/supabase-js'; 

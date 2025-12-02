@@ -3,22 +3,25 @@ import Logo from "../Logo";
 
 export default function HeroSection() {
   return (
-    <section className="pt-8 pb-16 flex flex-col items-center"> 
+    <section className="pt-20 pb-24 flex flex-col items-center space-y-12">
+
       {/* LOGO */}
-      <div className="flex justify-center mb-4 pt-16">
-        <Logo className="w-80 h-28"/>
+      <div className="flex justify-center">
+        <Logo className="w-72 md:w-80 h-auto" />
       </div>
 
-      {/* TEXTO CENTRAL */}
-      <div className="bg-white p-5 rounded-2xl shadow-md max-w-2xl text-center mb-10">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+      {/* TEXTO PRINCIPAL */}
+      <div className="bg-white px-8 py-6 rounded-2xl shadow-md max-w-3xl w-full text-center">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 leading-snug">
           Sé parte de esta nueva experiencia en entrevistas laborales
         </h1>
       </div>
 
-      {/* BLOQUE LOOPY */}
-      <div className="flex flex-col md:flex-row items-center max-w-6xl">
-        <div className="p-6 bg-white rounded-2xl shadow-md text-center md:text-left">
+      {/* BLOQUE TEXTO + LOOPY */}
+      <div className="w-full max-w-5xl flex items-center justify-center gap-6">
+
+        {/* CUADRO DE TEXTO – se hace MÁS CORTO */}
+        <div className="bg-white shadow-md rounded-2xl p-8 flex-1 max-w-3xl">
           <h2 className="text-2xl md:text-3xl font-bold text-slate-800 mb-3">
             ¡Hola! Soy Loopy,
           </h2>
@@ -29,16 +32,19 @@ export default function HeroSection() {
           </p>
         </div>
 
-        <div className="flex-shrink-0">
+        {/* LOOPY – completamente afuera del cuadro */}
+        <div className="hidden md:flex items-center justify-center">
           <Image
             src="/loopySaludando.png"
-            alt="Personaje loopy"
-            width={300}
-            height={300}
-            className="w-48 h-48 md:w-64 md:h-64"
+            alt="Loopy"
+            width={200}
+            height={200}
+            className="drop-shadow-lg"
           />
         </div>
+
       </div>
+
     </section>
   );
 }

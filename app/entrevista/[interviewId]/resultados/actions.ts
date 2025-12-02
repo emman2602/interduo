@@ -83,6 +83,52 @@ export async function shareInterviewAction(interviewId: string) {
 }
 
 
+// =======================================================
+// 2. ACCIÓN: SOLICITAR REVISIÓN DE EXPERTO (¡LA QUE FALTABA!)
+// =======================================================
+export async function requestExpertReviewAction(interviewId: string) {
+  const supabase = await createClient();
+  
+  try {
+    // Verificar usuario
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("No autenticado");
+
+    // Verificar estado actual
+    const { data: interview, error: fetchError } = await supabase
+      .from('interviews')
+      .select('expert_status')
+      .eq('id', interviewId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    // Si ya está en proceso, avisar
+    if (interview.expert_status !== 'none') {
+      return { error: 'Ya existe una solicitud para esta entrevista.' };
+    }
+
+    // Actualizar estado a 'pending'
+    // Aseguramos con .eq('user_id', user.id) que solo el dueño pueda hacerlo
+    const { error: updateError } = await supabase
+      .from('interviews')
+      .update({ expert_status: 'pending' })
+      .eq('id', interviewId)
+      .eq('user_id', user.id);
+
+    if (updateError) throw updateError;
+
+    return { success: true };
+
+  } catch (error: unknown) {
+    let message = 'Error desconocido al solicitar experto';
+    if (error instanceof Error) message = error.message;
+    console.error(message);
+    return { error: message };
+  }
+}
+
+
 
 // --- ACCIÓN DE EVALUAR ---
 export async function evaluateEntireInterviewAction(

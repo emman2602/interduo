@@ -5,6 +5,7 @@ import SubareaGrid from './SubareaGrid'; // Importa el componente cliente
 import Image from 'next/image';
 import { Button } from '@/components/ui/button2';
 import Link from 'next/link';
+import ExpertDashboard from '@/components/ExpertDashboard';
 
 
 // 1. Define el tipo de dato que esperamos
@@ -19,42 +20,56 @@ async function loadDashboardData() {
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    redirect('/login');
-  }
+  if (!user) redirect('/login');
 
-  // 3. Busca el perfil del usuario (igual que en el layout)
+  // Obtener perfil y rol
   const { data: profile } = await supabase
     .from('user_roles')
-    .select('selected_area_id')
+    .select('role, selected_area_id')
     .eq('user_id', user.id)
     .single();
 
+  const role = profile?.role || 'user';
+
+  // CASO A: Es Experto -> No necesita cargar subáreas
+  if (role === 'expert') {
+    return { role, subareas: [] };
+  }
+
+  // CASO B: Es Usuario -> Validar onboarding
   if (!profile?.selected_area_id) {
-    // Si no tiene área, lo mandamos al cuestionario
     redirect('/cuestionario/areas');
   }
 
-  // 4. Carga las subáreas que coinciden con el área del usuario
+  // Cargar sus subáreas
+  // Cargar sus subáreas
+const subareaResult = await supabase
+  .from('subareas')
+  .select('id, name, image_url')
+  .eq('area_id', profile.selected_area_id);
 
-  const { data: subareas, error } = await supabase
-    .from('subareas')
-    .select('id, name, image_url')
-    .eq('area_id', profile.selected_area_id);
-
-  if (error) {
-    console.error('Error cargando subáreas:', error.message);
-    return [];
-  }
-
-  return subareas || [];
+if (subareaResult.error) {
+  console.error('Error cargando subáreas:', subareaResult.error.message);
+  return { role, subareas: [] };
 }
 
+return { role, subareas: subareaResult.data as Subarea[] };
 
+}
 
 export default async function DashboardPage() {
-  // 6. Llama a la función de carga de datos
-  const subareas = await loadDashboardData();
+  // 3. Obtenemos role Y subareas
+  const { role, subareas } = await loadDashboardData();
+
+  // ------------------------------------------------------
+  // VISTA DE EXPERTO
+  // ------------------------------------------------------
+  if (role === 'expert') {
+    return <ExpertDashboard/>;
+  }
+  if (role === 'admin') {
+    redirect('/dashboard/admin/solicitudes');
+  }
 
   return (
     <div className="min-h-screen w-full">

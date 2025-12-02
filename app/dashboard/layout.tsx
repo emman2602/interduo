@@ -1,4 +1,5 @@
 
+import AdminSideNav from '@/components/AdminSideNav';
 import SideNav from '@/components/SideNav';
 import TopNav from '@/components/TopNav';
 import { createClient } from '@/lib/supabase/server';
@@ -23,10 +24,15 @@ async function getUserData() {
   // 1. Sigue buscando el perfil...
   const { data: profile } = await supabase
     .from('user_roles')
-    .select('selected_area_id, selected_experience')
+    .select('role, selected_area_id, selected_experience')
     .eq('user_id', user.id)
     .single();
+    const role = profile?.role || 'user';
 
+    // 2. Si es ADMIN, devolvemos temprano (no necesita subáreas)
+  if (role === 'admin') {
+    return { user, role, subareas: [] };
+  }
   // 2. redirigir si no ha completado el cuestionario
   if (!profile?.selected_area_id || !profile?.selected_experience) {
     redirect('/cuestionario/areas');
@@ -44,13 +50,22 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   // 5. Llama a la función ( devuelve 'user')
-  const { user } = await getUserData();
+  const { user, role } = await getUserData();
 
   return (
     <div>
       {/* 6. Pasa solo 'user' a los componentes */}
-      <SideNav user={user} />
-      <TopNav user={user} />
+      {role === 'admin' ? (
+        // Si es Admin, mostramos su Sidebar especial
+        <AdminSideNav user={user} />
+      ) : (
+        // Si es Usuario/Experto, mostramos el Sidebar normal
+        <>
+          <SideNav user={user}  />
+          {/* TopNav solo para usuarios normales (opcional, o puedes crear un AdminTopNav) */}
+          <TopNav user={user} />
+        </>
+      )}
 
       {/* 3. Contenido principal */}
       <main className="py-10 mt-16 md:mt-0 md:pl-64">

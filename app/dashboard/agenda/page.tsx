@@ -1,7 +1,10 @@
+import AgendaSection from "./AgendaSection";
 
 
 export default function Agenda(){
     return(
-        <h1 className="min-h-screen w-full">Agenda</h1>
+        <div className="p-6">
+      <AgendaSection />
+    </div>
     )
 }

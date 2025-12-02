@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button2';
 
 import Link from 'next/link';
 import ShareButton from './ShareButton';
+import { createClient } from '@/lib/supabase/server';
+import RequestExpertButton from './RequestExpertButton';
 
 
 type Props = {
@@ -17,6 +19,15 @@ export default async function ResultsPage({ params }: Props) {
   // 1. Llama a la acción que hace la evaluacion de entrevista
   const { averageScore, evaluations, error } = await evaluateEntireInterviewAction(interviewId);
 
+  // 2. NUEVO: Obtener el estado de experto actual
+  const supabase = await createClient();
+  const { data: interviewData } = await supabase
+    .from('interviews')
+    .select('expert_status')
+    .eq('id', interviewId)
+    .single();
+  
+  const expertStatus = interviewData?.expert_status || 'none';
   if (error) {
     return (
       <div className="text-red-500">
@@ -58,14 +69,10 @@ export default async function ResultsPage({ params }: Props) {
         <div className="flex flex-col sm:flex-row gap-4 w-full">
           
           {/* Botón 2: Evaluar por experto (Deshabilitado) */}
-          <Button
-            className="flex-1" 
-            disabled
-            title="Próximamente"
-          >
-           
-            Evaluar por experto
-          </Button>
+          <RequestExpertButton
+            interviewId={interviewId} 
+            currentStatus={expertStatus} 
+          />
           
           {/* Botón 3: Comunidad */}
         <Link href="/dashboard/comunidad" className="flex-1">

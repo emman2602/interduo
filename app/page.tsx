@@ -6,6 +6,9 @@ import HeroSection from "@/components/home/HeroSection";
 import AboutSection from "@/components/home/AboutSection";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import BenefitsSection from "@/components/home/BenefitsSection";
+import ExpertsSection from "@/components/home/ExpertSection";
+import HowItWorksSection from "@/components/home/HowItWorks";
 
 
 
@@ -26,6 +29,10 @@ export default async function Home() {
         <NavBar/>
         <HeroSection/>
         <AboutSection/>
+        <HowItWorksSection/>
+        <BenefitsSection/>
+        <ExpertsSection/>
+        
         <Footer/>
       </div>
     </main>

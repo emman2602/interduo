@@ -4,53 +4,21 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CiSaveUp2 } from 'react-icons/ci';
-import { GoBell } from 'react-icons/go';
-import {
-  IoCalendarOutline,
-  IoHomeOutline,
-  IoSettingsOutline,
-  IoPeopleOutline
-} from 'react-icons/io5';
-import { GrUserExpert } from "react-icons/gr";
+
+import {  Users, Database } from 'lucide-react';
 
 import clsx from 'clsx';
 
 const links = [
   {
-    name: 'Dashboard', 
-    href: '/dashboard',
-    icon: IoHomeOutline,
+    name: 'Solicitudes', 
+    href: '/dashboard/admin/solicitudes',
+    icon: Users,
   },
   {
-    name: 'Entrevistas',
-    href: '/dashboard/entrevistas',
-    icon: CiSaveUp2,
-  },
-  {
-    name: 'Agenda',
-    href: '/dashboard/agenda',
-    icon: IoCalendarOutline,
-  },
-  {
-    name: 'Notificaciones',
-    href: '/dashboard/notificaciones',
-    icon: GoBell,
-  },
-  {
-    name: 'Comunidad',
-    href: '/dashboard/comunidad',
-    icon: IoPeopleOutline,
-  },
-  {
-    name: 'Expertos',
-    href: '/dashboard/expertos',
-    icon: GrUserExpert,
-  },
-  {
-    name: 'Ajustes',
-    href: '/dashboard/ajustes',
-    icon: IoSettingsOutline,
+    name: 'Contenido',
+    href: '/dashboard/admin/contenido',
+    icon: Database,
   }
   
 ];
@@ -80,7 +48,7 @@ export default function NavLinks() {
             )}
           >
             <LinkIcon className="w-8 h-5" />
-            {/* 4. Tu lógica 'hidden md:block' es correcta */}
+           
             <p className="hidden md:block ml-2">{link.name}</p>
           </Link>
         );
