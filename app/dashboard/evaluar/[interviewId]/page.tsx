@@ -22,16 +22,17 @@ type ExpertEvaluationDetails = {
 };
 
 type Props = {
-  params: {
+  params: Promise<{
     interviewId: string;
-  };
+  }>;
 };
+
 
 // ----------- Página -----------
 
 export default async function ExpertEvaluationPage({ params }: Props) {
-   const resolvedParams = await params;
-  const { interviewId } = resolvedParams;
+   const { interviewId } = await params;
+
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
