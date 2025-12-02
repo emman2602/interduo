@@ -46,7 +46,7 @@ export default function ApplicationCard({ app }: { app: Application }) {
           </span>
         </div>
         <p className="text-gray-800 font-medium">Motivación:</p>
-        <p className="text-gray-600 text-sm italic">"{app.motivation}"</p>
+        <p className="text-gray-600 text-sm italic">&quot;{app.motivation}&quot;</p>
         {app.linkedin_url && (
           <a href={app.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm hover:underline block mt-1">
             Ver LinkedIn

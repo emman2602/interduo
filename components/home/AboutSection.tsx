@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function AboutSection() {
   return (
-    <section className="py-16">
+    <section className="py-2">
       <div className="container mx-auto px-4 max-w-5xl">
         {/* BLOQUE DE TEXTO PRINCIPAL */}
         <div className="bg-white p-8 sm:p-10 rounded-2xl shadow-lg text-center mb-12">

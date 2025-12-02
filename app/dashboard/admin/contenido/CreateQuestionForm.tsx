@@ -68,7 +68,7 @@ export default function CreateQuestionForm() {
     let parsedMetadata = {};
     try {
       if (metadata) parsedMetadata = JSON.parse(metadata);
-    } catch (e) {
+    } catch {
       alert('El formato de metadatos JSON no es válido');
       setLoading(false);
       return;

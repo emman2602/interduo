@@ -24,7 +24,6 @@ export async function approveExpertAction(applicationId: string, targetUserId: s
   try {
     const supabase = await checkAdmin();
 
-    // A. Cambiar rol del usuario a 'expert'
     const { error: roleError } = await supabase
       .from('user_roles')
       .update({ role: 'expert', verified_expert: true })
@@ -32,7 +31,6 @@ export async function approveExpertAction(applicationId: string, targetUserId: s
 
     if (roleError) throw roleError;
 
-    // B. Marcar solicitud como aprobada
     const { error: appError } = await supabase
       .from('expert_applications')
       .update({ status: 'approved' })
@@ -42,8 +40,10 @@ export async function approveExpertAction(applicationId: string, targetUserId: s
 
     revalidatePath('/dashboard/admin');
     return { success: true };
-  } catch (error: any) {
-    return { error: error.message };
+
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return { error: message };
   }
 }
 
@@ -61,8 +61,10 @@ export async function rejectExpertAction(applicationId: string) {
 
     revalidatePath('/dashboard/admin');
     return { success: true };
-  } catch (error: any) {
-    return { error: error.message };
+
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return { error: message };
   }
 }
 
@@ -81,17 +83,20 @@ export async function createAreaAction(name: string) {
 
     revalidatePath('/dashboard/admin');
     return { success: true, data };
-  } catch (error: any) {
-    return { error: error.message };
+
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return { error: message };
   }
 }
 
+// 4. CREAR PREGUNTA
 export async function createQuestionAction(data: {
   subarea_id: string;
   type_id: string;
   question_text: string;
   difficulty_level: number;
-  metadata?: any;
+  metadata?: unknown;
 }) {
   try {
     const supabase = await checkAdmin();
@@ -102,9 +107,10 @@ export async function createQuestionAction(data: {
 
     if (error) throw error;
 
-    // No necesitamos revalidatePath aquí porque el formulario se limpia solo
     return { success: true };
-  } catch (error: any) {
-    return { error: error.message };
+
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return { error: message };
   }
 }

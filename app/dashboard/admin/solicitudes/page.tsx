@@ -23,7 +23,7 @@ export default async function RequestsPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {list.map((app: any) => (
+          {list.map((app) => (
             <ApplicationCard key={app.id} app={app} />
           ))}
         </div>

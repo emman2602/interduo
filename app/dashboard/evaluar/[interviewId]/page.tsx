@@ -30,7 +30,8 @@ type Props = {
 // ----------- Página -----------
 
 export default async function ExpertEvaluationPage({ params }: Props) {
-  const { interviewId } = params;
+   const resolvedParams = await params;
+  const { interviewId } = resolvedParams;
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

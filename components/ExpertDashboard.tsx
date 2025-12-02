@@ -1,31 +1,41 @@
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button2';
-import { CheckCircle2, Clock, Search, FileText, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Clock, Search, ArrowRight } from 'lucide-react';
+
+
+type InterviewRow = {
+  id: string;
+  created_at: string;
+  expert_status: string;
+  subareas: {
+    name: string | null;
+  }[]; 
+};
 
 export default async function ExpertDashboard() {
   const supabase = await createClient();
 
-  // 1. Consulta ACTUALIZADA: Solo entrevistas con expert_status = 'pending'
-  // Usamos la tabla directa 'interviews' para evitar problemas con la vista
   const { data: pendingInterviews, error } = await supabase
     .from('interviews')
-    .select(`
-      id,
-      created_at,
-      expert_status,
-      subareas ( name )
-    `) 
-    .eq('expert_status', 'pending') 
-    .order('created_at', { ascending: true }) // Las más antiguas primero (FIFO)
+    .select(
+      `
+        id,
+        created_at,
+        expert_status,
+        subareas ( name )
+      `
+    )
+    .eq('expert_status', 'pending')
+    .order('created_at', { ascending: true })
     .limit(20);
 
   if (error) {
     console.error("Error cargando dashboard experto:", error);
   }
 
-  // Casting seguro a any[] o un tipo específico si lo tienes
-  const interviews = (pendingInterviews as any[]) || [];
+  // Datos tipados sin usar any
+  const interviews: InterviewRow[] = pendingInterviews ?? [];
 
   return (
     <div className="w-full p-8">
@@ -55,15 +65,17 @@ export default async function ExpertDashboard() {
           </div>
         ) : (
           interviews.map((interview) => (
-            <div key={interview.id} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row md:items-center justify-between gap-4">
-              
+            <div
+              key={interview.id}
+              className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row md:items-center justify-between gap-4"
+            >
               <div className="flex items-start gap-4">
                 <div className="p-3 bg-yellow-50 rounded-lg text-yellow-600">
                   <Clock className="w-6 h-6" />
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-800 text-lg">
-                    {interview.subareas?.name || 'Entrevista Técnica'}
+                    {interview.subareas?.[0]?.name ?? 'Entrevista Técnica'}
                   </h3>
                   <p className="text-sm text-gray-500">
                     Solicitado el: {new Date(interview.created_at).toLocaleDateString()}
@@ -75,13 +87,12 @@ export default async function ExpertDashboard() {
               </div>
 
               <div className="flex-shrink-0">
-                <Link href={`/dashboard/evaluar/${interview.id}`}> 
-                  <Button className="w-full md:w-auto ">
+                <Link href={`/dashboard/evaluar/${interview.id}`}>
+                  <Button className="w-full md:w-auto">
                     Revisar <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
               </div>
-
             </div>
           ))
         )}

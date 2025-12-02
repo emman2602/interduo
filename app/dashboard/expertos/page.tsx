@@ -3,6 +3,26 @@ import { redirect } from 'next/navigation';
 import ExpertHistoryCard from './ExpertHistoryCard';
 import { ShieldCheck } from 'lucide-react';
 
+type InterviewHistoryItem = {
+  interview_id: string;
+  subarea_name: string | null;
+  created_at: string;
+  feedback_text: string | null;
+  candidate_email: string | null;
+  expert_email: string | null;
+  assigned_expert_id: string;
+  candidate_id: string;
+  expert_status: string;
+};
+
+type MappedHistoryItem = {
+  interview_id: string;
+  subarea_name: string;
+  created_at: string;
+  feedback_text: string;
+  other_party_email: string;
+};
+
 export default async function ExpertHistoryPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -16,45 +36,39 @@ export default async function ExpertHistoryPage() {
     .eq('user_id', user.id)
     .single();
 
-  const role = userRole?.role || 'user';
-  let historyData = [];
+  const role: 'expert' | 'user' = userRole?.role === 'expert' ? 'expert' : 'user';
 
   // ============================================================
-  //  USAMOS LA VISTA 'vw_interviews_history'
+  // CONSULTA A LA VISTA 'vw_interviews_history'
   // ============================================================
-  
-  // CONSULTA COMÚN (La filtramos según el rol abajo)
+
   let query = supabase
     .from('vw_interviews_history')
     .select('*')
     .eq('expert_status', 'completed')
     .order('created_at', { ascending: false });
 
-  // A) MODO EXPERTO: Ver lo que YO evalué
   if (role === 'expert') {
     query = query.eq('assigned_expert_id', user.id);
-  } 
-  // B) MODO USUARIO: Ver mis propias entrevistas
-  else {
+  } else {
     query = query.eq('candidate_id', user.id);
   }
 
   const { data, error } = await query;
 
   if (error) {
-    console.error("Error fetching history:", error);
+    console.error('Error fetching history:', error);
   }
 
-  // Mapeamos los datos planos de la vista
-  historyData = (data || []).map((item: any) => ({
+  const historyData: MappedHistoryItem[] = (data || []).map((item: InterviewHistoryItem) => ({
     interview_id: item.interview_id,
-    subarea_name: item.subarea_name || 'Desconocido',
+    subarea_name: item.subarea_name ?? 'Desconocido',
     created_at: item.created_at,
-    feedback_text: item.feedback_text || 'Sin comentarios registrados.',
-    // Si soy experto, muestro el email del candidato. Si soy usuario, el del experto.
-    other_party_email: role === 'expert' 
-      ? (item.candidate_email || 'Candidato Anónimo')
-      : (item.expert_email || 'Experto Verificado')
+    feedback_text: item.feedback_text ?? 'Sin comentarios registrados.',
+    other_party_email:
+      role === 'expert'
+        ? item.candidate_email ?? 'Candidato Anónimo'
+        : item.expert_email ?? 'Experto Verificado',
   }));
 
   return (
@@ -86,11 +100,11 @@ export default async function ExpertHistoryPage() {
             )}
           </div>
         ) : (
-          historyData.map((item: any) => (
+          historyData.map((item) => (
             <ExpertHistoryCard
               key={item.interview_id}
               data={item}
-              role={role === 'expert' ? 'expert' : 'user'}
+              role={role}
             />
           ))
         )}
