@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function ExpertsSection() {
   return (
-    <section className="py-16 ">
+    <section id="expertos" className="py-16 ">
       <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-10">
         ¿Quieres ser parte de la comunidad de expertos?
       </h2>

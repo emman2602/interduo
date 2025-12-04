@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function BenefitsSection() {
   return (
-    <section className="w-full py-20 flex flex-col items-center">
+    <section id="benefits" className="w-full py-20 flex flex-col items-center">
       <h2 className="text-3xl font-bold text-center text-gray-800 mb-10">Beneficios</h2>
 
       {/* Tarjetas de beneficios */}

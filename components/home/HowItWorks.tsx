@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function HowItWorksSection() {
   return (
-    <section className="py-16 ">
+    <section id="comofunciona" className="py-16 ">
       <div className="container mx-auto px-4 max-w-6xl">
         {/* TÍTULO */}
         <h2 className="text-2xl md:text-3xl font-bold text-slate-800 text-center mb-12">

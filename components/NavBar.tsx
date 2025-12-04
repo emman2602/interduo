@@ -9,10 +9,10 @@ import { Menu, X } from 'lucide-react'; // Iconos para el menú (npm install luc
 
 // 1. Define tus enlaces en un array para no repetirlos
 const navLinks = [
-  { href: "#", name: "Contacto" },
-  { href: "#", name: "Beneficios" },
-  { href: "#", name: "¿Cómo funciona?" },
-  { href: "#", name: "Sobre Interduo" },
+ { href: "#expertos", name: "Expertos" },
+  { href: "#benefits", name: "Beneficios" },
+  { href: "#comofunciona", name: "¿Cómo funciona?" },
+  { href: "#about", name: "Sobre Interduo" },
   { href: "/auth/login", name: "Iniciar Sesión" },
   { href: "/auth/sign-up", name: "Registrarse" },
 ];
