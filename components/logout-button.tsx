@@ -19,6 +19,7 @@ export function LogoutButton({ className, useBigButton = false }: LogoutButtonPr
   const logout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
+    router.refresh();
     router.push("/auth/login"); // Redirige al login
   };
 

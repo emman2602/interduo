@@ -1,5 +1,6 @@
 
 import AdminSideNav from '@/components/AdminSideNav';
+import AdminTopNav from '@/components/AdminTopNav';
 import SideNav from '@/components/SideNav';
 import TopNav from '@/components/TopNav';
 import { createClient } from '@/lib/supabase/server';
@@ -57,12 +58,15 @@ export default async function DashboardLayout({
       {/* 6. Pasa solo 'user' a los componentes */}
       {role === 'admin' ? (
         // Si es Admin, mostramos su Sidebar especial
-        <AdminSideNav user={user} />
+        <><AdminSideNav user={user} />
+          <AdminTopNav user={user} />
+        </>
+          
       ) : (
         // Si es Usuario/Experto, mostramos el Sidebar normal
         <>
           <SideNav user={user}  />
-          {/* TopNav solo para usuarios normales (opcional, o puedes crear un AdminTopNav) */}
+          
           <TopNav user={user} />
         </>
       )}

@@ -1,10 +1,10 @@
-
+// components/TopNav.tsx
 'use client';
 
 
 import Image from 'next/image';
 import type { User } from '@supabase/supabase-js';
-import NavLinks from './NavLinks';
+import NavLinks from './AdminLinks';
 import Logo from './Logo';
 
 // 1. Importa Headless UI y tu LogoutButton
@@ -15,7 +15,7 @@ type TopNavProps = {
   user: User;
 };
 
-export default function TopNav({ user }: TopNavProps) {
+export default function AdminTopNav({ user }: TopNavProps) {
   return (
     <div className="md:hidden flex h-16 w-full items-center justify-between px-4 sm:px-6 lg:px-8 bg-white border-b border-gray-200 fixed top-0 left-0 z-50">
       
@@ -23,7 +23,7 @@ export default function TopNav({ user }: TopNavProps) {
       <Logo/>
       
       {/* Tus NavLinks (Quedan igual) */}
-      <nav className="flex flex-row sm:gap-x-4">
+      <nav className=" flex flex-row sm:gap-x-4 space-x-4">
         <NavLinks/> 
       </nav>
 
