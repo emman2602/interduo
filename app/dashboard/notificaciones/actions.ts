@@ -60,7 +60,7 @@ export async function createNotification({
   title: string;
   message: string;
   link_url?: string | null;
-  metadata?: any;
+  metadata?: Record<string, unknown> | null;
 }) {
   const supabase = await createClient();
 

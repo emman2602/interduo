@@ -18,7 +18,7 @@ interface Notification {
   title: string;
   message: string;
   link_url?: string | null;
-  metadata?: any;
+  metadata?: Record<string, unknown> | null;
   created_at: string;
   read_at: string | null;
 }
